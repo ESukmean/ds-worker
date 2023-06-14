@@ -4,9 +4,9 @@ use bytes::BytesMut;
 
 #[derive(Clone, Debug)]
 pub enum Packet {
-    Handshake(usize),         // Version
-    HandshakeResponse(usize), // Worker ID
-    Video(Bytes),             // Video data
+    Handshake(usize),       // Version
+    HandshakeResponse(u32), // Worker ID
+    Video(Bytes),           // Video data
     Control(ControlPacket),
 }
 
@@ -88,9 +88,9 @@ impl Packer<Packet> {
             0x00 => Some(Packet::Handshake(
                 u32::from_be_bytes([b[1], b[2], b[3], b[4]]) as usize,
             )),
-            0x01 => Some(Packet::HandshakeResponse(
-                u32::from_be_bytes([b[1], b[2], b[3], b[4]]) as usize,
-            )),
+            0x01 => Some(Packet::HandshakeResponse(u32::from_be_bytes([
+                b[1], b[2], b[3], b[4],
+            ]))),
             0x02 => Some(Packet::Video(b.slice(1..))),
             0x03 => Some(Packet::Control(Packer::<ControlPacket>::unpack(
                 b.slice(1..),
